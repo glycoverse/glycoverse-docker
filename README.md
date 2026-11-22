@@ -118,14 +118,19 @@ docker buildx build --builder glycoverse-builder \
 
 ## GitHub Actions
 
-Pushes and pull requests build and test both platforms on native runners.
-Package manifests are uploaded as workflow artifacts.
+Pushes to `main` build and test both platforms on native runners, then automatically
+publish the multi-platform image to Docker Hub. Pull requests only build and test.
+Package manifests are uploaded as workflow artifacts. Both architecture tests must
+pass before the shared `latest`, `4.6`, and `4.6.2` tags are updated; each publication
+also receives a unique CI build tag.
 
-To enable publishing from Actions, set the repository variable
-`DOCKERHUB_USERNAME` and repository secret `DOCKERHUB_TOKEN` (a Docker Hub token
-with write access to `fubin1999/glycoverse`). Run the **Docker** workflow on `main`
-with **publish** enabled. Both architecture tests must pass before the workflow
-updates the shared Docker Hub tags. Ordinary pushes only build and test.
+Publishing uses the repository variable `DOCKERHUB_USERNAME` and repository secret
+`DOCKERHUB_TOKEN`, with write access to `fubin1999/glycoverse`. These are configured
+in the upstream repository. Forks must configure their own credentials and image
+name before publishing.
+
+You can also run the **Docker** workflow manually on `main` with **publish** enabled.
+Leave **publish** disabled for a manual build and test without publishing.
 
 ## License
 
