@@ -20,7 +20,9 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY packages.txt scripts/install.R /opt/glycoverse/
-RUN --mount=type=cache,target=/root/.cache \
+ARG TARGETARCH
+# pak's repository metadata contains architecture-specific binary URLs.
+RUN --mount=type=cache,id=glycoverse-r46-${TARGETARCH},target=/root/.cache,sharing=locked \
     Rscript /opt/glycoverse/install.R \
     && rm -rf /tmp/downloaded_packages /tmp/Rtmp* /var/lib/apt/lists/*
 
