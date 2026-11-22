@@ -18,9 +18,11 @@ A ready-to-use R environment for glycomics and glycoproteomics analysis.
 Start an interactive R session:
 
 ```sh
-docker pull fubin1999/glycoverse:4.6.2
 docker run --rm -it fubin1999/glycoverse:4.6.2
 ```
+
+Docker downloads the image automatically if it is not already available locally.
+The Glycoverse packages and their required dependencies are preinstalled.
 
 Then attach the core packages:
 
