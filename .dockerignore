@@ -1,0 +1,6 @@
+**
+!Dockerfile
+!packages.txt
+!scripts/
+!scripts/install.R
+!scripts/smoke-test.R
