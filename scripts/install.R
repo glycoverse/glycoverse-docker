@@ -3,6 +3,8 @@ stopifnot(getRversion() >= "4.6.0", getRversion() < "4.7.0")
 
 packages <- scan("/opt/glycoverse/packages.txt", what = character(), quiet = TRUE)
 stopifnot(length(packages) == 13L, !anyDuplicated(packages))
+# Rocker also ships R packages outside the Glycoverse dependency tree.
+bundled <- installed.packages(priority = c("recommended", NA_character_))[, "Package"]
 
 repos <- c(
   glycoverse = "https://glycoverse.r-universe.dev",
@@ -28,7 +30,8 @@ stopifnot(requireNamespace("pak", quietly = TRUE))
 # pak resolves CRAN/Bioconductor dependencies and installs their system libraries.
 # r-universe tracks the latest tagged Glycoverse releases.
 releases <- available.packages(repos = repos["glycoverse"], type = "source")[, "Version"]
-pak::pkg_install(c(packages, "BiocVersion"), upgrade = TRUE, dependencies = NA, ask = FALSE)
+targets <- unique(c(packages, bundled, "BiocVersion"))
+pak::pkg_install(targets, upgrade = TRUE, dependencies = NA, ask = FALSE)
 stopifnot(packageVersion("BiocVersion")[, 1:2] == bioc_version)
 
 for (package in packages) {

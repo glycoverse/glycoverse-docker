@@ -111,7 +111,8 @@ The **Docker** workflow starts a release build on the first of every month at
 02:17 UTC (10:17 in Shanghai), even when `main` has no new commits. Each release
 rebuilds from the pinned R base, refreshes the package indexes, and installs the
 latest compatible versions of the 13 listed Glycoverse packages and their required
-CRAN and Bioconductor dependencies.
+CRAN and Bioconductor dependencies. It also upgrades the recommended and add-on
+R packages bundled by Rocker.
 
 Native Linux `amd64` and `arm64` runners each test the image offline and upload
 their installed-package manifests. The workflow publishes the multi-platform
