@@ -23,6 +23,7 @@ docker run --rm -it fubin1999/glycoverse:4.6.2
 
 Docker downloads the image automatically if it is not already available locally.
 The Glycoverse packages and their required dependencies are preinstalled.
+To update a local copy after a monthly release, run `docker pull fubin1999/glycoverse:4.6.2`.
 
 Then attach the core packages:
 
@@ -73,9 +74,10 @@ optional package may require adding it with `pak::pkg_install()`.
 
 ## Tags and reproducibility
 
-`latest`, `4.6`, and `4.6.2` identify the current R 4.6.2 build. Dated or CI build
-tags identify individual publications. These tags may contain newer Glycoverse
-package releases after a rebuild.
+Each monthly release gets a `YYYY-MM` tag for the UTC month of publication.
+`latest`, `4.6`, and `4.6.2` follow the most recent release. If a release is
+reissued in the same month, the month tag follows it too. The
+`4.6.2-build-<run-id>-<attempt>` tag identifies an individual publication.
 
 For a fixed analysis environment, record and use the published image digest:
 
@@ -103,34 +105,26 @@ docker run --rm --network none glycoverse:local \
 docker build --build-arg NCPUS=4 --tag glycoverse:local .
 ```
 
-To publish both platforms using a Buildx builder with multi-platform support:
-
-```sh
-docker login
-docker buildx create --name glycoverse-builder --driver docker-container
-docker buildx build --builder glycoverse-builder \
-  --platform linux/amd64,linux/arm64 \
-  --tag fubin1999/glycoverse:latest \
-  --tag fubin1999/glycoverse:4.6 \
-  --tag fubin1999/glycoverse:4.6.2 \
-  --push .
-```
-
 ## GitHub Actions
 
-Pushes to `main` build and test both platforms on native runners, then automatically
-publish the multi-platform image to Docker Hub. Pull requests only build and test.
-Package manifests are uploaded as workflow artifacts. Both architecture tests must
-pass before the shared `latest`, `4.6`, and `4.6.2` tags are updated; each publication
-also receives a unique CI build tag.
+The **Docker** workflow starts a release build on the first of every month at
+02:17 UTC (10:17 in Shanghai), even when `main` has no new commits. Each release
+rebuilds from the pinned R base, refreshes the package indexes, and installs the
+latest compatible versions of the 13 listed Glycoverse packages and their required
+CRAN and Bioconductor dependencies.
+
+Native Linux `amd64` and `arm64` runners each test the image offline and upload
+their installed-package manifests. The workflow publishes the multi-platform
+tags to Docker Hub after both tests pass. Pushes to `main` and pull requests
+run the same build and tests with publishing disabled.
 
 Publishing uses the repository variable `DOCKERHUB_USERNAME` and repository secret
 `DOCKERHUB_TOKEN`, with write access to `fubin1999/glycoverse`. These are configured
 in the upstream repository. Forks must configure their own credentials and image
 name before publishing.
 
-You can also run the **Docker** workflow manually on `main` with **publish** enabled.
-Leave **publish** disabled for a manual build and test without publishing.
+To recover a missed or failed monthly release, run **Docker** manually on `main`
+with **publish** enabled. A manual run defaults to building and testing only.
 
 ## License
 
