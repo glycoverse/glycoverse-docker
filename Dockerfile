@@ -12,7 +12,8 @@ ARG NCPUS=2
 ENV MAKEFLAGS="-j${NCPUS}" \
     R_BUILD_NCPUS=${NCPUS}
 
-RUN apt-get update \
+RUN echo 'Acquire::Retries "3";' > /etc/apt/apt.conf.d/80-glycoverse-retries \
+    && apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates curl git \
         libcurl4-openssl-dev libssl-dev libxml2-dev \

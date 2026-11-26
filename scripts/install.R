@@ -18,7 +18,7 @@ options(repos = repos, pkg.metadata_update_after = as.difftime(0, units = "secs"
 install.packages("BiocManager", repos = repos["CRANsource"])
 bioc_version <- BiocManager::version()
 repos <- BiocManager::repositories(version = bioc_version)
-options(repos = repos, pkg.use_bioconductor = FALSE)
+options(repos = repos, pkg.use_bioconductor = FALSE, pkg.sysreqs_verbose = TRUE)
 
 # Official self-contained pak binaries support both Linux amd64 and arm64.
 install.packages("pak", repos = sprintf(
