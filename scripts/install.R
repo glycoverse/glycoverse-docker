@@ -6,9 +6,10 @@ stopifnot(length(packages) == 13L, !anyDuplicated(packages))
 
 repos <- c(
   glycoverse = "https://glycoverse.r-universe.dev",
-  getOption("repos")
+  getOption("repos"),
+  CRANsource = "https://cloud.r-project.org"
 )
-options(repos = repos)
+options(repos = repos, pkg.metadata_update_after = as.difftime(0, units = "secs"))
 
 # Official self-contained pak binaries support both Linux amd64 and arm64.
 install.packages("pak", repos = sprintf(
@@ -18,11 +19,17 @@ install.packages("pak", repos = sprintf(
 stopifnot(requireNamespace("pak", quietly = TRUE))
 
 # pak resolves CRAN/Bioconductor dependencies and installs their system libraries.
-# r-universe tracks the latest tagged Glycoverse releases, not development HEAD.
-pak::pkg_install(c(packages, "BiocManager"), dependencies = NA, ask = FALSE)
+# r-universe tracks the latest tagged Glycoverse releases.
+releases <- available.packages(repos = repos["glycoverse"], type = "source")[, "Version"]
+pak::pkg_install(c(packages, "BiocManager"), upgrade = TRUE, dependencies = NA, ask = FALSE)
 
-missing <- packages[!vapply(packages, requireNamespace, logical(1), quietly = TRUE)]
-if (length(missing)) stop("Packages failed to load: ", paste(missing, collapse = ", "))
+for (package in packages) {
+  expected <- releases[package]
+  if (is.na(expected)) stop("Package missing from the Glycoverse release index: ", package)
+  if (!requireNamespace(package, quietly = TRUE) || packageVersion(package) < expected) {
+    stop("Expected to load ", package, " ", expected, " or newer")
+  }
+}
 
 installed <- as.data.frame(installed.packages(), stringsAsFactors = FALSE)
 fields <- intersect(c("Package", "Version", "Repository", "Built"), names(installed))
@@ -34,6 +41,6 @@ writeLines(capture.output(sessionInfo()), "/opt/glycoverse/build-session.txt")
 
 # Keep the same repositories available to interactive sessions in the image.
 cat(
-  '\noptions(repos = c(glycoverse = "https://glycoverse.r-universe.dev", getOption("repos")))\n',
-  file = file.path(R.home("etc"), "Rprofile.site"), append = TRUE
+  "", deparse(call("options", repos = repos)),
+  file = file.path(R.home("etc"), "Rprofile.site"), append = TRUE, sep = "\n"
 )
